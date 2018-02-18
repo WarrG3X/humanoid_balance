@@ -2,7 +2,7 @@
 import rospy
 import time
 import pypot.dynamixel
-from math import acos,tan,degrees,radians
+from math import pi,acos,tan,degrees,radians
 from geometry_msgs.msg import Vector3Stamped
 from sensor_msgs.msg import Imu
 
@@ -11,12 +11,12 @@ from sensor_msgs.msg import Imu
 b = 0.0925       #Shin Link
 c = 0.0925       #Thigh Link
 h = b+c          #Leg Height
-d = 0.078        #Footplate Distance
+d = 0.064        #Footplate Distance
 
 #Parameters
-SPEED = 500
+SPEED = 370
 LOCK = 19
-AXIS = 'y'
+AXIS = 'x'
 
 #Variables
 dxl_io = None
@@ -74,7 +74,7 @@ def rightleg(t,debug=True):
         return
     theta = degrees(t)
     angleA,angleB,angleC = get_angles(abs(t))
-    angles = {17:-theta,18:-theta}
+    angles = {17:theta,18:theta}
     dxl_io.set_goal_position(angles)
     time.sleep(0.01)
     angles = {11:-angleB,12:0,13:-angleA,14:0,15:-angleC,16:0}
@@ -84,12 +84,14 @@ def rightleg(t,debug=True):
 
 def get_rpy(data):
     t = getattr(data.vector,AXIS)
+    sign = t/abs(t)
+    t = sign*abs(pi-abs(t))
     theta = degrees(t)
     print theta
-    if theta > 0.5 and theta < 20:
+    if theta > 0.1 and theta < 20:
         leftleg(t,debug=False)
         pass
-    elif theta < -0.5 and theta > -20:
+    elif theta < -0.1 and theta > -20:
         rightleg(t,debug=False)
         pass
     else:
