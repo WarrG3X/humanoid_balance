@@ -88,10 +88,10 @@ def get_rpy(data):
     t = sign*abs(pi-abs(t))
     theta = degrees(t)
     print theta
-    if theta > 0.1 and theta < 20:
+    if theta > 0.1 and theta < 25:
         leftleg(t,debug=False)
         pass
-    elif theta < -0.1 and theta > -20:
+    elif theta < -0.1 and theta > -25:
         rightleg(t,debug=False)
         pass
     else:
