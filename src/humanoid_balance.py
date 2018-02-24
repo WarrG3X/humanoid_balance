@@ -17,10 +17,12 @@ d = 0.064        #Footplate Distance
 SPEED = 370
 LOCK = 19
 AXIS1 = 'x'
+AXIS2 = 'y'
 
 #Variables
 dxl_io = None
 ids = [11,12,13,14,15,16,17,18]
+angles = {x:0 for x in ids}
 
 def initialize_dxl():
     global dxl_io
@@ -56,38 +58,47 @@ def get_angles(t):
     return angleA,angleB,angleC
 
 
+
 def leftleg(t,debug=True):
+    global angles
     print("Left")
     if debug:
         return
     theta = degrees(t)
     angleA,angleB,angleC = get_angles(t)
-    angles = {17:theta,18:theta}
-    dxl_io.set_goal_position(angles)
-    #time.sleep(0.01)
-    angles = {11:0,12:angleB,13:0,14:angleA,15:0,16:angleC}
+    angles ={11:0,12:angleB,13:0,14:angleA,15:angles[15],16:angleC,17:theta,18:theta}
     dxl_io.set_goal_position(angles)
 
 def rightleg(t,debug=True):
+    global angles
     print("right")
     if debug:
         return
     theta = degrees(t)
     angleA,angleB,angleC = get_angles(abs(t))
-    angles = {17:theta,18:theta}
-    dxl_io.set_goal_position(angles)
-    #time.sleep(0.01)
-    angles = {11:-angleB,12:0,13:-angleA,14:0,15:-angleC,16:0}
+    angles = {11:-angleB,12:0,13:-angleA,14:0,15:-angleC,16:angles[16],17:theta,18:theta}
     dxl_io.set_goal_position(angles)
 
+def sagittal_balance(phi):
+    #Phi is in Degrees
+    #state = dxl_io.get_present_position([15,16])
+    #print state
+    sagittal_angles = {15:angles[15],16:angles[16]}
+    sagittal_angles[15] += -phi
+    sagittal_angles[16] += phi
+    #print(angles)
+    #print(sagittal_angles)
+    dxl_io.set_goal_position(sagittal_angles)
 
 
 def get_rpy(data):
     t = getattr(data.vector,AXIS1)
+    p = getattr(data.vector,AXIS2)
     sign = t/abs(t)
     t = sign*abs(pi-abs(t))
     theta = degrees(t)
-    print theta
+    phi = degrees(p)
+    print phi
     if theta > 0 and theta < 25:
         leftleg(t,debug=False)
         pass
@@ -98,7 +109,9 @@ def get_rpy(data):
         print "Not in Range"
         pass
     
-
+    if phi < 25 and phi >-25:
+        pass
+        sagittal_balance(phi)
 
 
 
