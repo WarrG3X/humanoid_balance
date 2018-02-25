@@ -65,7 +65,7 @@ def leftleg(t,debug=True):
     angles = {17:theta,18:theta}
     dxl_io.set_goal_position(angles)
     #time.sleep(0.01)
-    angles = {11:0,12:angleB,13:0,14:angleA,15:0,16:angleC}
+    angles = {12:angleB,14:angleA,16:angleC}
     dxl_io.set_goal_position(angles)
 
 def rightleg(t,debug=True):
@@ -77,7 +77,7 @@ def rightleg(t,debug=True):
     angles = {17:theta,18:theta}
     dxl_io.set_goal_position(angles)
     #time.sleep(0.01)
-    angles = {11:-angleB,12:0,13:-angleA,14:0,15:-angleC,16:0}
+    angles = {11:-angleB,13:-angleA,15:-angleC}
     dxl_io.set_goal_position(angles)
 
 

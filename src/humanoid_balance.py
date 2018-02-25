@@ -2,7 +2,7 @@
 import rospy
 import time
 import pypot.dynamixel
-from math import pi,acos,tan,degrees,radians
+from math import pi,acos,tan,log,degrees,radians
 from geometry_msgs.msg import Vector3Stamped
 from sensor_msgs.msg import Imu
 
@@ -14,10 +14,11 @@ h = b+c          #Leg Height
 d = 0.064        #Footplate Distance
 
 #Parameters
-SPEED = 370
+SPEED = 1023
 LOCK = 19
 AXIS1 = 'x'
 AXIS2 = 'y'
+FLAG = None
 
 #Variables
 dxl_io = None
@@ -65,9 +66,15 @@ def leftleg(t,debug=True):
     if debug:
         return
     theta = degrees(t)
+    if abs(theta) > 10:
+        #factor = log(abs(theta),10)
+        factor = 1
+    else:
+        factor = 1
+
+
     angleA,angleB,angleC = get_angles(t)
-    angles ={11:0,12:angleB,13:0,14:angleA,15:angles[15],16:angleC,17:theta,18:theta}
-    dxl_io.set_goal_position(angles)
+    angles ={12:angleB,14:angleA,15:angles[15],16:angleC,17:factor*theta,18:factor*theta}
 
 def rightleg(t,debug=True):
     global angles
@@ -75,23 +82,38 @@ def rightleg(t,debug=True):
     if debug:
         return
     theta = degrees(t)
+    if abs(theta) > 10:
+        #factor = log(abs(theta),10)
+        factor = 1
+    else:
+        factor = 1
+
     angleA,angleB,angleC = get_angles(abs(t))
-    angles = {11:-angleB,12:0,13:-angleA,14:0,15:-angleC,16:angles[16],17:theta,18:theta}
-    dxl_io.set_goal_position(angles)
+    angles = {11:-angleB,13:-angleA,15:-angleC,16:angles[16],17:factor*theta,18:factor*theta}
 
 def sagittal_balance(phi):
     #Phi is in Degrees
-    #state = dxl_io.get_present_position([15,16])
-    #print state
-    sagittal_angles = {15:angles[15],16:angles[16]}
-    sagittal_angles[15] += -phi
-    sagittal_angles[16] += phi
-    #print(angles)
-    #print(sagittal_angles)
-    dxl_io.set_goal_position(sagittal_angles)
+    global angles
+    if abs(phi) > 10:
+        #factor = log(abs(phi),10)
+        factor = 1
+    else:
+        factor = 1
+
+    if FLAG == 'LEFT':
+        angles[15] = -factor*phi
+        angles[16] += factor*phi
+    elif FLAG == 'RIGHT':
+        angles[15] += -factor*phi
+        angles[16] = factor*phi
+    else:
+        angles[15] += -factor*phi
+        angles[16] += factor*phi
 
 
 def get_rpy(data):
+    global angles
+    global FLAG
     t = getattr(data.vector,AXIS1)
     p = getattr(data.vector,AXIS2)
     sign = t/abs(t)
@@ -101,19 +123,24 @@ def get_rpy(data):
     print phi
     if theta > 0 and theta < 25:
         leftleg(t,debug=False)
+        FLAG = 'LEFT'
         pass
     elif theta < 0 and theta > -25:
         rightleg(t,debug=False)
+        FLAG = 'RIGHT'
         pass
     else:
+        angles = {x:0 for x in ids}
         print "Not in Range"
+        FLAG = None
         pass
     
-    if phi < 25 and phi >-25:
-        pass
+    if phi < 50 and phi >-50:
         sagittal_balance(phi)
+        pass
 
-
+    print angles
+    dxl_io.set_goal_position(angles)
 
 
 if __name__ == '__main__':
