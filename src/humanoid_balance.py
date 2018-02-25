@@ -144,7 +144,7 @@ def get_rpy(data):
 
 
 if __name__ == '__main__':
-    rospy.init_node('humanoid_lateral_balance',anonymous=False)
+    rospy.init_node('humanoid_balance',anonymous=False)
     initialize_dxl()
     initialize_robot()
     raw_input("Begin?")
