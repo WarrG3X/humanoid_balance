@@ -6,6 +6,7 @@ from math import pi,acos,tan,log,degrees,radians
 from geometry_msgs.msg import Vector3Stamped
 from sensor_msgs.msg import Imu
 from humanoid_balance.msg import botinfo
+from pynamixel.msg import Actuation
 
 
 #Constants
@@ -59,6 +60,13 @@ def get_angles(t):
     angleB = degrees(acos((c**2 + h**2 +(d**2)*(tan(t)**2) -b**2-2*h*d*tan(t))/(2*c*(h-d*tan(t)))))
     angleC = -degrees(acos((b**2 + h**2 +(d**2)*(tan(t)**2) -c**2-2*h*d*tan(t))/(2*b*(h-d*tan(t)))))
     return angleA,angleB,angleC
+
+def publish_pos(angles):
+    msg = Actuation()
+    msg.ids = range(11,19)
+    msg.speeds = [1023 for id in ids]
+    msg.angles = angles
+    pubpos.publish(msg)
 
 def publish_log(angles,yaw,pitch,roll):
     message = botinfo()
@@ -141,11 +149,11 @@ def get_rpy(data):
     #print phi
 
     if theta > 0 and theta < 25:
-        leftleg(t,debug=False)
+        leftleg(t,debug=True)
         FLAG = 'LEFT'
         pass
     elif theta < 0 and theta > -25:
-        rightleg(t,debug=False)
+        rightleg(t,debug=True)
         FLAG = 'RIGHT'
         pass
     else:
@@ -159,14 +167,16 @@ def get_rpy(data):
         pass
 
     print angles
+    publish_pos(angles)
     publish_log(angles,psi,phi,theta)
-    dxl_io.set_goal_position(angles)
+    #dxl_io.set_goal_position(angles)
 
 if __name__ == '__main__':
     rospy.init_node('balance',anonymous=False)
-    initialize_dxl()
-    initialize_robot()
+    #initialize_dxl()
+    #initialize_robot()
     raw_input("Begin?")
     pub = rospy.Publisher('robotlog',botinfo,queue_size=10)
+    pubpos = rospy.Publisher('actuation',Actuation,queue_size=10)
     rospy.Subscriber("/imu/rpy/filtered",Vector3Stamped,get_rpy)
     rospy.spin()
