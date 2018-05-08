@@ -65,7 +65,7 @@ def publish_pos(angles):
     msg = Actuation()
     msg.ids = range(11,19)
     msg.speeds = [1023 for id in ids]
-    msg.angles = angles
+    msg.angles = angles.values()
     pubpos.publish(msg)
 
 def publish_log(angles,yaw,pitch,roll):
@@ -145,9 +145,9 @@ def get_rpy(data):
     t = sign*abs(pi-abs(t))
     theta = degrees(t)
     phi = degrees(p)
-    psi = degrees(s)
-    #print phi
-
+    psi = degrees(s)    
+    #print theta
+    
     if theta > 0 and theta < 25:
         leftleg(t,debug=True)
         FLAG = 'LEFT'
