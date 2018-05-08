@@ -9,12 +9,13 @@ import time
 import math
 from geometry_msgs.msg import Vector3
 
-poll_interval = None
 
-def init_imu():
-    global poll_interval
-    SETTINGS_PATH = rospy.get_param('/config_path')
-    SETTINGS_FILE = rospy.get_param('/config_file')
+def publish_rpy():
+    pub_rpy = rospy.Publisher('/imu/rpy', Vector3, queue_size=10)
+    rospy.init_node('rpygen', anonymous=False)
+    rate = rospy.Rate(10) # 10hz
+    SETTINGS_PATH = rospy.get_param('/rpygen/config_path')
+    SETTINGS_FILE = SETTINGS_PATH+"/"+rospy.get_param('/rpygen/config_file')
     rospy.loginfo("Using settings file " + SETTINGS_FILE + ".ini")
     if not os.path.exists(SETTINGS_FILE + ".ini"):
         print("Settings file does not exist, will be created")
@@ -37,17 +38,6 @@ def init_imu():
 
     poll_interval = imu.IMUGetPollInterval()
     print("Recommended Poll Interval: %dmS\n" % poll_interval)
-    
-    return imu
-
-
-
-
-def publish_rpy():
-    pubi_rpy = rospy.Publisher('/imu/rpy', Vector3, queue_size=10)
-    rospy.init_node('rpygen', anonymous=False)
-    rate = rospy.Rate(10) # 10hz
-    imu = init_imu()
     while not rospy.is_shutdown():
         if imu.IMURead():
             data = imu.getIMUData()
@@ -55,12 +45,14 @@ def publish_rpy():
             #print("r: %f p: %f y: %f" % (math.degrees(fusionPose[0]),math.degrees(fusionPose[1]), math.degrees(fusionPose[2])))
             (roll, pitch, yaw) = fusionPose
             rpy = Vector3()
-            rpy.vector.x = roll
-            rpy.vector.y = pitch
-            rpy.vector.z = yaw
+            rpy.x = roll
+            rpy.y = pitch
+            rpy.z = yaw
             pub_rpy.publish(rpy)
             time.sleep(poll_interval*1.0/1000.0)
             #rate.sleep()
+        else:
+            pass
 
 
 if __name__ == '__main__':
