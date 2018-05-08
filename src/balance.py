@@ -163,7 +163,7 @@ def get_rpy(data):
         pass
     
     if phi < 50 and phi >-50:
-        sagittal_balance(phi)
+        #sagittal_balance(phi)
         pass
 
     print angles

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="humanoid_balance" type="imu_fusion.py" name="rpygen" output="screen">
+        <param name="config_path" value="$(find humanoid_balance)/config"/>
+        <param name="config_file" value="RTIMULib3" />
+    </node>
+</launch>
+
