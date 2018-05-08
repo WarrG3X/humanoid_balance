@@ -178,5 +178,5 @@ if __name__ == '__main__':
     raw_input("Begin?")
     pub = rospy.Publisher('robotlog',botinfo,queue_size=10)
     pubpos = rospy.Publisher('actuation',Actuation,queue_size=10)
-    rospy.Subscriber("/imu/rpy/filtered",Vector3Stamped,get_rpy)
+    rospy.Subscriber("/rpy",Vector3Stamped,get_rpy)
     rospy.spin()
