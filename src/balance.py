@@ -2,7 +2,7 @@
 import rospy
 import time
 from math import pi,acos,tan,log,degrees,radians
-from geometry_msgs.msg import Vector3Stamped
+from geometry_msgs.msg import Vector3
 from sensor_msgs.msg import Imu
 from humanoid_balance.msg import botinfo
 from pynamixel.msg import Actuation
@@ -109,15 +109,16 @@ def sagittal_balance(phi):
 def get_rpy(data):
     global angles
     global FLAG
-    t = getattr(data.vector,AXIS1)
-    p = getattr(data.vector,AXIS2)
-    s = getattr(data.vector,AXIS3)
+    t = getattr(data,AXIS1)
+    p = getattr(data,AXIS2)
+    s = getattr(data,AXIS3)
     sign = t/abs(t)
-    t = sign*abs(pi-abs(t))
+    t = sign*abs(pi-abs(t)) - radians(4.5)
     theta = degrees(t)
     phi = degrees(p)
     psi = degrees(s)    
-    #print(theta)
+    print ("Theta:",theta)
+    print ("Phi:", phi)
     
     if theta > 0 and theta < 25:
         leftleg(t,debug=True)
@@ -137,7 +138,7 @@ def get_rpy(data):
         #sagittal_balance(phi)
         pass
 
-    print (angles)
+    #print (angles)
     publish_pos(angles)
     publish_log(angles,psi,phi,theta)
 
@@ -146,5 +147,5 @@ if __name__ == '__main__':
     raw_input("Begin?")
     pub = rospy.Publisher('robotlog',botinfo,queue_size=10)
     pubpos = rospy.Publisher('actuation',Actuation,queue_size=10)
-    rospy.Subscriber("/rpy",Vector3Stamped,get_rpy)
+    rospy.Subscriber("/imu/rpy",Vector3,get_rpy)
     rospy.spin()
