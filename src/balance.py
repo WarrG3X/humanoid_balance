@@ -36,7 +36,7 @@ def publish_pos(angles):
     msg = Actuation()
     msg.ids = range(11,19)
     msg.speeds = [1023 for id in ids]
-    msg.angles = angles.values()
+    msg.angles = [angles[11],angles[12],angles[13],angles[14],angles[15],angles[16],angles[17],angles[18]]
     pubpos.publish(msg)
 
 def publish_log(angles,yaw,pitch,roll):
@@ -115,17 +115,17 @@ def get_rpy(data):
     sign = t/abs(t)
     t = sign*abs(pi-abs(t)) - radians(4.5)
     theta = degrees(t)
-    phi = degrees(p)
+    phi = degrees(p) + 6.5
     psi = degrees(s)    
     print ("Theta:",theta)
     print ("Phi:", phi)
     
-    if theta > 0 and theta < 25:
-        leftleg(t,debug=True)
+    if theta > 0 and theta < 40:
+        leftleg(t,debug=False)
         FLAG = 'LEFT'
         pass
-    elif theta < 0 and theta > -25:
-        rightleg(t,debug=True)
+    elif theta < 0 and theta > -40:
+        rightleg(t,debug=False)
         FLAG = 'RIGHT'
         pass
     else:
@@ -138,7 +138,8 @@ def get_rpy(data):
         #sagittal_balance(phi)
         pass
 
-    #print (angles)
+    angles = {x:round(angles[x],2) for x in angles}
+    print (angles)
     publish_pos(angles)
     publish_log(angles,psi,phi,theta)
 
