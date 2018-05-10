@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import time
+import pypot.dynamixel
 from math import pi,acos,tan,log,degrees,radians
 from geometry_msgs.msg import Vector3Stamped
 from sensor_msgs.msg import Imu
@@ -23,8 +24,36 @@ AXIS3 = 'z'
 FLAG = None
 
 #Variables
+dxl_io = None
 ids = [11,12,13,14,15,16,17,18]
 angles = {x:0 for x in ids}
+
+def initialize_dxl():
+    global dxl_io
+    global ids
+    port_id = 0
+    ports = pypot.dynamixel.get_available_ports()
+    if not ports:
+        raise IOError('no port found!')
+
+    print('ports found', ports)
+    print('connecting on the first available port:', ports[port_id])
+    dxl_io = pypot.dynamixel.DxlIO(ports[port_id])
+    ids = dxl_io.scan(range(25))
+    speeds = [SPEED for x in ids]
+
+    if len(ids) != LOCK:
+        print ids
+        raise RuntimeError("Couldn't detect all motors.")
+
+    dxl_io.set_moving_speed(dict(zip(ids,speeds)))
+
+
+def initialize_robot():
+    raw_input("Initialize?")
+    init_angles = [0 for x in ids]
+    dxl_io.set_goal_position(dict(zip(ids,init_angles)))
+
 
 def get_angles(t):
     angleA = degrees(acos((b**2 + c**2 + 2*h*d*tan(t) -h**2-(d**2)*(tan(t)**2))/(2*b*c)))-180
@@ -117,7 +146,7 @@ def get_rpy(data):
     theta = degrees(t)
     phi = degrees(p)
     psi = degrees(s)    
-    #print(theta)
+    #print theta
     
     if theta > 0 and theta < 25:
         leftleg(t,debug=True)
@@ -129,7 +158,7 @@ def get_rpy(data):
         pass
     else:
         angles = {x:0 for x in ids}
-        print ("Not in Range")
+        print "Not in Range"
         FLAG = None
         pass
     
@@ -137,12 +166,15 @@ def get_rpy(data):
         #sagittal_balance(phi)
         pass
 
-    print (angles)
+    print angles
     publish_pos(angles)
     publish_log(angles,psi,phi,theta)
+    #dxl_io.set_goal_position(angles)
 
 if __name__ == '__main__':
     rospy.init_node('balance',anonymous=False)
+    #initialize_dxl()
+    #initialize_robot()
     raw_input("Begin?")
     pub = rospy.Publisher('robotlog',botinfo,queue_size=10)
     pubpos = rospy.Publisher('actuation',Actuation,queue_size=10)
