@@ -147,6 +147,6 @@ if __name__ == '__main__':
     rospy.init_node('balance',anonymous=False)
     raw_input("Begin?")
     pub = rospy.Publisher('robotlog',botinfo,queue_size=10)
-    pubpos = rospy.Publisher('actuation',Actuation,queue_size=10)
+    pubpos = rospy.Publisher('/pynamixel/actuation',Actuation,queue_size=10)
     rospy.Subscriber("/imu/rpy",Vector3,get_rpy)
     rospy.spin()
